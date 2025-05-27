@@ -11,7 +11,7 @@ Navigate to the dataset list using the sidebar or the cards on the homepage.
 !!! tip "Explore Whombat with Example Data"
 
     Curious to see how a fully populated dataset looks in Whombat? Import the example dataset, complete with rich metadata and recordings, to explore its features and functionalities.
-    The [import data guide](import.md) provides step-by-step instructions.
+    The [import data guide](guides/import.md) provides step-by-step instructions.
 
 ## Selecting a Dataset to Work On
 
@@ -29,8 +29,7 @@ Whombat will scan the folder and automatically include all available audio files
 
 ??? info "Supported Audio Formats"
 
-    Currently, Whombat exclusively supports WAV files. However, we're actively
-    exploring the possibility of adding support for FLAC files.
+    Since v0.5.0, Whombat supports FLAC and MP3 in addition to WAV files.
 
 !!! tip "Audio file preparation"
 
