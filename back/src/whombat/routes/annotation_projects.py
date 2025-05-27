@@ -1,6 +1,7 @@
 """REST API routes for annotation projects."""
 
 from typing import Annotated
+from pathlib import Path
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, UploadFile
@@ -12,6 +13,8 @@ from whombat.api.io import aoef
 from whombat.filters.annotation_projects import AnnotationProjectFilter
 from whombat.routes.dependencies import Session, WhombatSettings
 from whombat.routes.types import Limit, Offset
+from whombat.system.settings import get_settings
+
 
 __all__ = [
     "annotation_projects_router",
@@ -185,10 +188,12 @@ async def download_annotation_project(
     project = await api.annotation_projects.to_soundevent(
         session, whombat_project
     )
-    base_dir = await api.annotation_projects.get_base_dir(
+    base_dir: Path = await api.annotation_projects.get_base_dir(
         session, whombat_project
     )
-    obj = to_aeof(project, audio_dir=base_dir)
+    audio_dir = get_settings().audio_dir
+
+    obj = to_aeof(project, audio_dir=audio_dir / base_dir)
     filename = f"{project.name}_{obj.created_on.isoformat()}.json"
     return Response(
         obj.model_dump_json(),
