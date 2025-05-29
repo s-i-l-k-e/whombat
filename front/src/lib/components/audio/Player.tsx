@@ -30,6 +30,20 @@ import {
   SpeedIcon,
 } from "@/lib/components/icons";
 
+function BoundingBoxIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect x="3" y="6" width="18" height="12" rx="2" strokeWidth="2" />
+    </svg>
+  );
+}
+
 import type { SpeedOption } from "@/lib/hooks/settings/useAudioSettings";
 
 const COMMON_BUTTON_CLASSES =
@@ -46,10 +60,12 @@ export default function Player({
   isPlaying = false,
   loop = false,
   speed = 1,
+  boundingBoxMode = false,
   onPlay,
   onPause,
   onSeek,
   onToggleLoop,
+  onToggleBoundingBoxMode,
   onChangeSpeed,
 }: {
   currentTime: number;
@@ -58,11 +74,13 @@ export default function Player({
   isPlaying?: boolean;
   loop?: boolean;
   speed?: number;
+  boundingBoxMode?: boolean;
   speedOptions: SpeedOption[];
   onPlay?: () => void;
   onPause?: () => void;
   onSeek?: (time: number) => void;
   onToggleLoop?: () => void;
+  onToggleBoundingBoxMode?: () => void;
   onChangeSpeed?: (speed: number) => void;
 }) {
   return (
@@ -96,12 +114,26 @@ export default function Player({
       >
         <LoopIcon className="w-5 h-5" />
       </button>
+      <button
+        type="button"
+        className={classNames(COMMON_BUTTON_CLASSES, {
+          "text-amber-500 dark:hover:text-amber-300 hover:text-amber-700":
+            boundingBoxMode,
+          "dark:text-stone-400 dark:hover:text-stone-200 text-stone-600 hover:text-stone-800":
+            !boundingBoxMode,
+        })}
+        onClick={() => onToggleBoundingBoxMode?.()}
+        title={boundingBoxMode ? "Exit bounding box mode" : "Play selected bounding box only"}
+      >
+        <BoundingBoxIcon className="w-5 h-5" />
+      </button>
       <PlayerSlider
         label="audio track"
         value={currentTime}
         minValue={startTime}
         maxValue={endTime}
         step={0.01}
+        boundingBoxMode={boundingBoxMode}
         onChange={(value) => onSeek?.(value as number)}
       />
       <SelectSpeed
@@ -210,9 +242,11 @@ function SelectSpeed({
  */
 function PlayerThumb({
   state,
+  boundingBoxMode,
   ...props
 }: {
   state: SliderState;
+  boundingBoxMode?: boolean;
 } & Omit<AriaSliderThumbOptions, "inputRef">) {
   let { index, name, trackRef } = props;
   let inputRef = useRef(null);
@@ -232,9 +266,13 @@ function PlayerThumb({
       {...thumbProps}
       className={classNames("w-3 h-3 rounded-full shadow cursor-pointer", {
         "focus:ring-4 focus:outline-none focus:ring-emerald-500/50":
-          isFocusVisible,
-        "bg-emerald-700 dark:bg-emerald-300": isDragging,
-        "bg-emerald-500": !isDragging,
+          isFocusVisible && !boundingBoxMode,
+        "focus:ring-4 focus:outline-none focus:ring-amber-500/50":
+          isFocusVisible && boundingBoxMode,
+        "bg-emerald-700 dark:bg-emerald-300": isDragging && !boundingBoxMode,
+        "bg-emerald-500": !isDragging && !boundingBoxMode,
+        "bg-amber-700 dark:bg-amber-300": isDragging && boundingBoxMode,
+        "bg-amber-500": !isDragging && boundingBoxMode,
       })}
     >
       <VisuallyHidden>
@@ -250,7 +288,7 @@ function PlayerThumb({
  * @component
  * @param {AriaSliderProps} props - Component properties.
  */
-function PlayerSlider(props: AriaSliderProps) {
+function PlayerSlider(props: AriaSliderProps & { boundingBoxMode?: boolean }) {
   const trackRef = useRef<HTMLDivElement | null>(null);
   let numberFormatter = useNumberFormatter({ style: "decimal" });
   const state = useSliderState({ ...props, numberFormatter });
@@ -279,7 +317,10 @@ function PlayerSlider(props: AriaSliderProps) {
       >
         <div className="w-full h-1 rounded-full bg-stone-900">
           <span
-            className="relative h-1 bg-emerald-600 rounded-full dark:bg-emerald-200"
+            className={classNames("relative h-1 rounded-full", {
+              "bg-emerald-600 dark:bg-emerald-200": !props.boundingBoxMode,
+              "bg-amber-600 dark:bg-amber-200": props.boundingBoxMode,
+            })}
             style={{
               width: `${Math.min(state.getThumbPercent(0), 100)}%`,
             }}
@@ -289,6 +330,7 @@ function PlayerSlider(props: AriaSliderProps) {
             state={state}
             trackRef={trackRef}
             name={"currentTime"}
+            boundingBoxMode={props.boundingBoxMode}
           />
         </div>
       </div>

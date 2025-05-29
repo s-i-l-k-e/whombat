@@ -16,6 +16,12 @@ export default function SoundEventAnnotationDetails({
       <H4 className="text-center">Sound Event Details</H4>
       <div className="flex flex-row flex-wrap gap-4">
         <div className="flex flex-col mr-4">
+          <DescriptionTerm>UUID</DescriptionTerm>
+          <DescriptionData>
+            {soundEventAnnotation.uuid}
+          </DescriptionData>
+        </div>
+        <div className="flex flex-col mr-4">
           <DescriptionTerm>Geometry Type</DescriptionTerm>
           <DescriptionData>
             {soundEventAnnotation.sound_event.geometry_type}

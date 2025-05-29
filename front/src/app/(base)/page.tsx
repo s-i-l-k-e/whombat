@@ -12,20 +12,18 @@ export default function Page() {
         <h1 className="text-center text-7xl">
           <span className="text-6xl font-thin">Welcome to</span>
           <br />
-          <Image
-            src="/whombat.svg"
+            <Image
+            src="/whofrog-simple.svg"
             alt="logo"
             width={100}
             height={100}
             className="m-2 inline"
           />
-          <span className="font-sans font-bold text-emerald-500 underline decoration-8">
-            Whombat
+          <span className="font-sans font-bold decoration-8">
+            WhoFrog
           </span>
         </h1>
-        <h2 className="text-center text-3xl text-stone-500 dark:text-stone-500">
-          Audio annotation tool with ML in mind!
-        </h2>
+    
       </div>
       <div className="pt-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -58,7 +56,7 @@ export default function Page() {
               Start Annotating
             </Link>
           </Card>
-          <Card className="p-6 justify-between">
+          {/* <Card className="p-6 justify-between">
             <h2 className="text-2xl font-bold mb-4">Evaluate your Models</h2>
             <p className="text-sm mb-4">
               Create evaluation sets, import model predictions, and test your
@@ -85,7 +83,7 @@ export default function Page() {
             >
               Start Exploring
             </Link>
-          </Card>
+          </Card> */}
         </div>
       </div>
     </div>
