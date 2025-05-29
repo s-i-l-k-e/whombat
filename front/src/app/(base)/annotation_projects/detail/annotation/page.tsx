@@ -16,6 +16,7 @@ export default function Page() {
 
   const searchParams = useSearchParams();
   const taskUUID = searchParams.get("annotation_task_uuid");
+  const soundEventAnnotationUUID = searchParams.get("sound_event_annotation_uuid");
 
   const { data: task, isLoading } = useAnnotationTask({
     uuid: taskUUID ?? "",
@@ -26,5 +27,11 @@ export default function Page() {
     return <Loading />;
   }
 
-  return <AnnotateTasks annotationProject={project} annotationTask={task} />;
+  return (
+    <AnnotateTasks 
+      annotationProject={project} 
+      annotationTask={task}
+      initialSoundEventAnnotationUUID={soundEventAnnotationUUID}
+    />
+  );
 }

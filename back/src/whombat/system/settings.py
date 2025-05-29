@@ -38,6 +38,13 @@ class Settings(BaseSettings):
     when changes are made to the source code.
     """
 
+    frontend_port: int = 3000
+    """Port on which the frontend is running.
+    
+    Used with the domain setting to generate links to sound event annotations in exports.
+    Defaults to 3000 for development, set to 80 for production HTTP or 443 for HTTPS.
+    """
+
     db_dialect: str = "sqlite"
     """Database dialect."""
 

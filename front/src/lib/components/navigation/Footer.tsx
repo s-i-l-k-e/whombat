@@ -1,7 +1,7 @@
 import { version } from "@/app/version";
 
 function WhombatVersion() {
-  return <div className="text-stone-500">whombat version: {version}</div>;
+  return <div className="text-stone-500">Powered by Whombat, version: {version}</div>;
 }
 
 export function Footer() {

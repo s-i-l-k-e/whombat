@@ -12,8 +12,8 @@ import type { User } from "@/lib/types";
 function Brand() {
   return (
     <a href="/" className="flex items-center">
-      <span className="self-center text-2xl font-bold text-emerald-500 underline whitespace-nowrap decoration-4">
-        Whombat
+      <span className="self-center text-2xl font-bold text-emerald-500  whitespace-nowrap decoration-4">
+        WhoFrog
       </span>
     </a>
   );
@@ -104,9 +104,9 @@ function NavItem({ href, label }: { href: string; label: string }) {
 
 function Navigation() {
   const navItems = [
-    { href: "/guide/", label: "User Guide" },
-    { href: "/about/", label: "About" },
-    { href: "/contact/", label: "Contact" },
+    // { href: "/guide/", label: "User Guide" },
+    // { href: "/about/", label: "About" },
+    // { href: "/contact/", label: "Contact" },
   ];
   return (
     <div className="hidden w-full md:block md:w-auto" id="navbar-default">

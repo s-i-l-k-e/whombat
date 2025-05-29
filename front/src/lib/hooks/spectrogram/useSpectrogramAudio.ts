@@ -13,6 +13,7 @@ export default function useSpectrogramAudio({
   recording,
   viewport,
   audioSettings,
+  customTimeRange,
   onSeek,
   onTimeUpdate,
   ...handlers
@@ -23,6 +24,8 @@ export default function useSpectrogramAudio({
   recording: Recording;
   /** The audio settings. */
   audioSettings: AudioSettings;
+  /** Optional custom time range for playback (e.g., bounding box mode). */
+  customTimeRange?: { startTime: number; endTime: number } | null;
   onPlay?: () => void;
   onPause?: () => void;
   onEnded?: () => void;
@@ -73,10 +76,16 @@ export default function useSpectrogramAudio({
     [centerOn, onSeek],
   );
 
-  return useRecordingAudio({
-    recording,
+  // Use custom time range if provided, otherwise use viewport bounds
+  const timeRange = customTimeRange || {
     startTime: bounds.time.min,
     endTime: bounds.time.max,
+  };
+
+  return useRecordingAudio({
+    recording,
+    startTime: timeRange.startTime,
+    endTime: timeRange.endTime,
     audioSettings: adjustedAudioSettings,
     onTimeUpdate: handleTimeUpdate,
     onSeek: handleSeek,

@@ -24,9 +24,11 @@ import AnnotationTagPalette from "./AnnotationTagPalette";
 export default function AnnotateTasks({
   annotationProject,
   annotationTask,
+  initialSoundEventAnnotationUUID,
 }: {
   annotationProject: AnnotationProject;
   annotationTask?: AnnotationTask;
+  initialSoundEventAnnotationUUID?: string | null;
 }) {
   const audioSettings = useAudioSettings();
 
@@ -131,6 +133,7 @@ export default function AnnotateTasks({
             audioSettings={audioSettings}
             spectrogramSettings={spectrogramSettings}
             tagPalette={tagPalette}
+            initialSoundEventAnnotationUUID={initialSoundEventAnnotationUUID}
           />
         ) : undefined
       }

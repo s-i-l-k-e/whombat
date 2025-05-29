@@ -192,12 +192,38 @@ async def download_annotation_project(
         session, whombat_project
     )
     audio_dir = get_settings().audio_dir
+    settings = get_settings()
 
     obj = to_aeof(project, audio_dir=audio_dir / base_dir)
     filename = f"{project.name}_{obj.created_on.isoformat()}.json"
+    
+    # Get the JSON and modify it to add URLs
+    import json
+    json_content = obj.model_dump_json()
+    obj_dict = json.loads(json_content)
+    
+    # Construct base URL from domain and frontend port
+    if settings.frontend_port in (80, 443):
+        # Standard HTTP/HTTPS ports - don't include port in URL
+        protocol = "https" if settings.frontend_port == 443 else "http"
+        base_url = f"{protocol}://{settings.domain}"
+    else:
+        # Non-standard port - include it in the URL
+        base_url = f"http://{settings.domain}:{settings.frontend_port}"
+    
+    # Add URLs to sound event annotations
+    obj_dict = obj_dict['data']
+    if 'sound_event_annotations' in obj_dict:
+        for sound_event_annotation in obj_dict['sound_event_annotations']:
+            if 'uuid' in sound_event_annotation:
+                sound_event_annotation['whombat_url'] = f"{base_url}/sound_event_annotations?uuid={sound_event_annotation['uuid']}"
+    
+    # Convert back to JSON
+    modified_json = json.dumps(obj_dict, indent=2)
+    
     return Response(
-        obj.model_dump_json(),
-        media_type="application/json",
+        modified_json,
+        media_type="application/json", 
         status_code=200,
         headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
