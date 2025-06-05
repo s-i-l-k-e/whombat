@@ -14,7 +14,7 @@ export default function SoundEventAnnotationPage() {
   useEffect(() => {
     const loadAnnotationTask = async () => {
       try {
-        const task = await api.soundEventAnnotations.getAnnotationTask(uuid);
+        const task = await api.soundEventAnnotations.getAnnotationTask(uuid as string);
         const annotationProjects = await api.annotationProjects.getMany({
           limit: 100, 
         });

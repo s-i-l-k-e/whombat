@@ -114,6 +114,12 @@ class Settings(BaseSettings):
     open_on_startup: bool = True
     """Open the application in the browser on startup."""
 
+    azure_tenant_id: str = ""
+    """Azure Tenant Id from Entra Application Registration."""
+
+    azure_client_id: str = ""
+    """Azure Client Id from Entra Application Registration."""
+
     @classmethod
     def settings_customise_sources(
         cls,

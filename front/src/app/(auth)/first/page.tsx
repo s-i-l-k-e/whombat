@@ -6,7 +6,6 @@ import toast from "react-hot-toast";
 
 import { WhombatIcon } from "@/lib/components/icons";
 import Info from "@/lib/components/ui/Info";
-import UserCreateForm from "@/lib/components/users/UserCreateForm";
 
 import type { User } from "@/lib/types";
 
@@ -49,10 +48,6 @@ export default function Page() {
           Let&apos;s get started by creating your account. Provide your
           information and set up a secure password below.
         </p>
-        <UserCreateForm
-          onCreate={handleCreate}
-          onAuthenticationError={handleAuthenticationError}
-        />
         <Info>
           <p className="text-sm max-w-prose text-center">
             Your data is stored locally on your computer and is not sent to any

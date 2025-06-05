@@ -9,7 +9,6 @@ import axios from "axios";
 import { registerAnnotationProjectAPI } from "./annotation_projects";
 import { registerAnnotationTasksAPI } from "./annotation_tasks";
 import { registerAudioAPI } from "./audio";
-import { registerAuthAPI } from "./auth";
 import { registerClipAnnotationsAPI } from "./clip_annotations";
 import { registerClipEvaluationAPI } from "./clip_evaluations";
 import { registerClipPredictionsAPI } from "./clip_predictions";
@@ -29,15 +28,15 @@ import { registerSpectrogramAPI } from "./spectrograms";
 import { registerTagAPI } from "./tags";
 import { registerUserAPI } from "./user";
 import { registerUserRunAPI } from "./user_runs";
+import { getSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 type APIConfig = {
   baseURL: string;
-  withCredentials: boolean;
 };
 
 const DEFAULT_CONFIG: APIConfig = {
-  baseURL: `${process.env.NEXT_PUBLIC_BACKEND_HOST}`,
-  withCredentials: true,
+  baseURL: `${process.env.NEXT_PUBLIC_BACKEND_HOST}`
 };
 
 /**
@@ -45,6 +44,28 @@ const DEFAULT_CONFIG: APIConfig = {
  */
 export default function createAPI(config: APIConfig = DEFAULT_CONFIG) {
   let instance = axios.create(config);
+  instance.interceptors.request.use(async (config) => {
+    const session = await getSession();
+    if ((session as any).accessToken) {
+      config.headers.Authorization = `Bearer ${(session as any).accessToken}`;
+    }
+    return config;
+  }, (error) => {
+    return Promise.reject(error);
+  });
+
+  instance.interceptors.response.use(
+    response => response,
+    error => {
+      const router = useRouter();
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        signOut();
+        router.push("/login");
+      }
+      return Promise.reject(error);
+    }
+  );
+
   return {
     annotationProjects: registerAnnotationProjectAPI(instance, {
       baseUrl: config.baseURL,
@@ -52,7 +73,6 @@ export default function createAPI(config: APIConfig = DEFAULT_CONFIG) {
     soundEventAnnotations: registerSoundEventAnnotationsAPI(instance),
     clipAnnotations: registerClipAnnotationsAPI(instance),
     audio: registerAudioAPI({ baseUrl: config.baseURL }),
-    auth: registerAuthAPI(instance),
     clips: registerClipAPI(instance),
     datasets: registerDatasetAPI({ instance }),
     evaluationSets: registerEvaluationSetAPI(instance, {

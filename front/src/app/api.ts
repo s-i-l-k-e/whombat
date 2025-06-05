@@ -6,8 +6,7 @@ const baseURL =
     : "";
 
 const api = createAPI({
-  baseURL,
-  withCredentials: true,
+  baseURL
 });
 
 export default api;

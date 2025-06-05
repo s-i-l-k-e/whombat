@@ -8,6 +8,7 @@ import useActiveUser from "@/app/hooks/api/useActiveUser";
 import { HorizontalDivider } from "@/lib/components/layouts/Divider";
 
 import type { User } from "@/lib/types";
+import { signOut } from "next-auth/react";
 
 function Brand() {
   return (
@@ -29,10 +30,7 @@ function UserDetail({ user }: { user?: User }) {
 }
 
 function UserMenu({ user, onLogout }: { user?: User; onLogout?: () => void }) {
-  const {
-    logout: { mutate: logout },
-  } = useActiveUser({ user, onLogout });
-
+  
   return (
     <Menu as="div" className="inline-block relative z-10 text-left">
       <Menu.Button className="inline-flex justify-center w-full rounded-md">
@@ -54,23 +52,8 @@ function UserMenu({ user, onLogout }: { user?: User; onLogout?: () => void }) {
           <HorizontalDivider />
           <Menu.Item>
             {({ active }) => (
-              <a
-                href={"profile"}
-                className={classnames(
-                  active
-                    ? "bg-stone-300 text-stone-900 dark:bg-stone-800 dark:text-stone-100"
-                    : "bg-stone-200 text-stone-700 dark:bg-stone-700 dark:text-stone-300",
-                  "group flex w-full items-center rounded-md px-2 py-2 text-sm",
-                )}
-              >
-                Profile
-              </a>
-            )}
-          </Menu.Item>
-          <Menu.Item>
-            {({ active }) => (
               <button
-                onClick={() => logout()}
+                onClick={() => signOut()}
                 className={classnames(
                   active
                     ? "bg-stone-300 text-stone-900 dark:bg-stone-800 dark:text-stone-100"
@@ -103,7 +86,7 @@ function NavItem({ href, label }: { href: string; label: string }) {
 }
 
 function Navigation() {
-  const navItems = [
+  const navItems : {href:string, label:string}[] = [
     // { href: "/guide/", label: "User Guide" },
     // { href: "/about/", label: "About" },
     // { href: "/contact/", label: "Contact" },

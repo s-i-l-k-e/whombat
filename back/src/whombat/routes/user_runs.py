@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends
 
 from whombat import api, schemas
 from whombat.filters.user_runs import UserRunFilter
-from whombat.routes.dependencies import Session, get_current_user_dependency
+from whombat.routes.dependencies import Session, get_current_user
 from whombat.routes.dependencies.settings import WhombatSettings
 from whombat.routes.types import Limit, Offset
 
@@ -18,8 +18,6 @@ __all__ = [
 
 def get_user_runs_router(settings: WhombatSettings) -> APIRouter:
     """Get the API router for model runs."""
-    active_user = get_current_user_dependency(settings)
-
     user_runs_router = APIRouter()
 
     @user_runs_router.get("/", response_model=schemas.Page[schemas.UserRun])
@@ -46,7 +44,7 @@ def get_user_runs_router(settings: WhombatSettings) -> APIRouter:
     @user_runs_router.post("/", response_model=schemas.UserRun)
     async def create_user_run(
         session: Session,
-        user: Annotated[schemas.SimpleUser, Depends(active_user)],
+        user: Annotated[schemas.SimpleUser, Depends(get_current_user)],
     ) -> schemas.UserRun:
         """Create model run."""
         user_run = await api.user_runs.create(

@@ -3,6 +3,7 @@
 import secrets
 from uuid import UUID
 
+from pydantic import EmailStr
 from soundevent import data
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -55,6 +56,30 @@ class UserAPI(
         )
         return schemas.SimpleUser.model_validate(obj)
 
+    async def get_by_azure_oid(
+            self,
+            session: AsyncSession,
+            azure_oid: str
+    ) -> schemas.SimpleUser:
+        """
+        Get a user by their Azure Object ID (OID).
+
+        Args:
+            session: The async database session
+            azure_oid: The Azure AD Object ID to look up
+
+        Returns:
+            schemas.SimpleUser: The user record matching the azure_oid
+
+        Raises:
+            exceptions.NotFoundError: If no user is found with the given azure_oid
+        """
+        obj = await common.get_object(
+            session, models.User, models.User.azure_oid == azure_oid
+        )
+
+        return schemas.SimpleUser.model_validate(obj)
+
     async def get_by_email(
         self,
         session: AsyncSession,
@@ -83,14 +108,14 @@ class UserAPI(
         return schemas.SimpleUser.model_validate(obj)
 
     async def create(
-        self,
-        session: AsyncSession,
-        username: str,
-        password: str,
-        email: str,
-        name: str | None = None,
-        is_active: bool = True,
-        is_superuser: bool = False,
+            self,
+            session: AsyncSession,
+            username: str,
+            email: EmailStr,
+            name: str | None = None,
+            azure_oid: str = None,
+            is_active: bool = True,
+            is_superuser: bool = False
     ) -> schemas.SimpleUser:
         """Create a user.
 
@@ -102,8 +127,6 @@ class UserAPI(
             The database session to use.
         username
             The username of the user.
-        password
-            The password of the user.
         email
             The email of the user.
         name
@@ -143,9 +166,10 @@ class UserAPI(
         db_user = await user_manager.create(
             schemas.UserCreate(
                 username=username,
-                password=password,
+                password="!", #adding dummy password with azure auth
                 email=email,
                 name=name,
+                azure_oid=azure_oid,
                 is_active=is_active,
                 is_superuser=is_superuser,
                 is_verified=True,

@@ -59,6 +59,11 @@ class User(Base):
     username: orm.Mapped[str] = orm.mapped_column(unique=True)
     """The username of the user."""
 
+    azure_oid: orm.Mapped[Optional[str]] = orm.mapped_column(
+        String(length=128), unique=True, index=True, nullable=True
+    )
+    """Azure AD Object ID for federated login."""
+
     id: orm.Mapped[UUID] = orm.mapped_column(
         primary_key=True, default_factory=uuid4, kw_only=False
     )

@@ -17,6 +17,7 @@ class SimpleUser(BaseSchema):
     username: str
     email: EmailStr | None = None
     name: str | None = None
+    azure_oid: str | None = None
     is_active: bool | None = False
     is_superuser: bool | None = False
     is_verified: bool | None = False
@@ -34,7 +35,9 @@ class UserCreate(schemas.BaseUserCreate):
     """Schema for User objects created by the user."""
 
     username: str
+    azure_oid: str | None = None
     name: str | None = None
+    password: str | None = None
 
 
 class UserUpdate(schemas.BaseUserUpdate):
