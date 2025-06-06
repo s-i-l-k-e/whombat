@@ -5,8 +5,8 @@ from jose import jwt
 import requests
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from system import get_database_url
-from system.database import get_async_session, create_async_db_engine
+from whombat.system import get_database_url
+from whombat.system.database import get_async_session, create_async_db_engine
 from whombat.system.settings import Settings
 from whombat import exceptions, api, schemas
 
