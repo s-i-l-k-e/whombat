@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends
 
 from whombat import api, schemas
 from whombat.filters.recordings import RecordingFilter
-from whombat.routes.dependencies import Session, get_current_user_dependency
+from whombat.routes.dependencies import Session, get_current_user
 from whombat.routes.dependencies.settings import WhombatSettings
 from whombat.routes.types import Limit, Offset
 
@@ -18,8 +18,6 @@ __all__ = [
 
 def get_recording_router(settings: WhombatSettings) -> APIRouter:
     """Get the API router for recordings."""
-    active_user = get_current_user_dependency(settings)
-
     recording_router = APIRouter()
 
     @recording_router.get(
@@ -125,7 +123,7 @@ def get_recording_router(settings: WhombatSettings) -> APIRouter:
         session: Session,
         recording_uuid: UUID,
         data: schemas.NoteCreate,
-        user: Annotated[schemas.SimpleUser, Depends(active_user)],
+        user: Annotated[schemas.SimpleUser, Depends(get_current_user)],
     ):
         """Add a note to a recording."""
         recording = await api.recordings.get(session, recording_uuid)

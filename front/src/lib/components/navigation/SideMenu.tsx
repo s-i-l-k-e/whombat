@@ -143,10 +143,7 @@ function SecondaryNavigation({
   pathname?: string;
   onLogout?: () => void;
 }) {
-  const {
-    logout: { mutate: logout },
-  } = useActiveUser({ user, onLogout });
-
+  
   return (
     <ul className="flex flex-col space-y-3 py-4 text-stone-400">
       <HorizontalDivider />
@@ -158,7 +155,7 @@ function SecondaryNavigation({
       <HorizontalDivider />
       <li className="px-3">
         <SideMenuButton tooltip={"Log Out"}>
-          <LogOutIcon onClick={() => logout()} className="w-6 h-6" />
+          <LogOutIcon onClick={() => onLogout?.()} className="w-6 h-6" />
         </SideMenuButton>
       </li>
     </ul>

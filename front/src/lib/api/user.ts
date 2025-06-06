@@ -4,9 +4,7 @@ import * as schemas from "@/lib/schemas";
 import type * as types from "@/lib/types";
 
 const DEFAULT_ENDPOINTS = {
-  me: "/api/v1/users/me",
-  update: "/api/v1/users/me",
-  first: "/api/v1/users/first/",
+  me: "/api/v1/auth/me"
 };
 
 export function registerUserAPI(
@@ -18,21 +16,7 @@ export function registerUserAPI(
     return schemas.UserSchema.parse(response.data);
   }
 
-  async function updateActiveUser(data: types.UserUpdate): Promise<types.User> {
-    let body = schemas.UserUpdateSchema.parse(data);
-    let response = await instance.patch(endpoints.update, body);
-    return schemas.UserSchema.parse(response.data);
-  }
-
-  async function createFirstUser(data: types.UserCreate): Promise<types.User> {
-    let body = schemas.UserCreateSchema.parse(data);
-    let response = await instance.post(endpoints.first, body);
-    return schemas.UserSchema.parse(response.data);
-  }
-
   return {
     me: getActiveUser,
-    update: updateActiveUser,
-    first: createFirstUser,
   } as const;
 }

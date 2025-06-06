@@ -1,7 +1,9 @@
 """Whombat REST API routes."""
 
 from fastapi import APIRouter
+from fastapi.params import Depends
 
+from whombat.core.azure_auth import AzureADAuth
 from whombat.routes.annotation_projects import annotation_projects_router
 from whombat.routes.annotation_tasks import get_annotation_tasks_router
 from whombat.routes.audio import audio_router
@@ -31,7 +33,6 @@ from whombat.routes.sound_events import sound_events_router
 from whombat.routes.spectrograms import spectrograms_router
 from whombat.routes.tags import tags_router
 from whombat.routes.user_runs import get_user_runs_router
-from whombat.routes.users import get_users_router
 from whombat.system.settings import Settings
 
 __all__ = [
@@ -40,37 +41,34 @@ __all__ = [
 
 
 def get_main_router(settings: Settings):
+    auth_middleware = AzureADAuth(settings)
     main_router = APIRouter(prefix="/api/v1")
 
     # Admin
-    auth_router = get_auth_router(settings)
+    auth_router = get_auth_router()
     main_router.include_router(
         auth_router,
         prefix="/auth",
         tags=["Auth"],
-    )
-
-    # Descriptors
-    users_router = get_users_router(settings)
-    main_router.include_router(
-        users_router,
-        prefix="/users",
-        tags=["Users"],
+        dependencies=[Depends(auth_middleware)]
     )
     main_router.include_router(
         tags_router,
         prefix="/tags",
         tags=["Tags"],
+        dependencies=[Depends(auth_middleware)]
     )
     main_router.include_router(
         features_router,
         prefix="/features",
         tags=["Features"],
+        dependencies=[Depends(auth_middleware)]
     )
     main_router.include_router(
         notes_router,
         prefix="/notes",
         tags=["Notes"],
+        dependencies=[Depends(auth_middleware)]
     )
 
     # Audio Metadata
@@ -79,11 +77,13 @@ def get_main_router(settings: Settings):
         recording_router,
         prefix="/recordings",
         tags=["Recordings"],
+        dependencies=[Depends(auth_middleware)]
     )
     main_router.include_router(
         dataset_router,
         prefix="/datasets",
         tags=["Datasets"],
+        dependencies=[Depends(auth_middleware)]
     )
 
     # Audio Content
@@ -103,11 +103,13 @@ def get_main_router(settings: Settings):
         sound_events_router,
         prefix="/sound_events",
         tags=["Sound Events"],
+        dependencies=[Depends(auth_middleware)]
     )
     main_router.include_router(
         clips_router,
         prefix="/clips",
         tags=["Clips"],
+        dependencies=[Depends(auth_middleware)]
     )
 
     # Annotation
@@ -118,23 +120,27 @@ def get_main_router(settings: Settings):
         sound_event_annotations_router,
         prefix="/sound_event_annotations",
         tags=["Sound Event Annotations"],
+        dependencies=[Depends(auth_middleware)]
     )
     clip_annotations_router = get_clip_annotations_router(settings)
     main_router.include_router(
         clip_annotations_router,
         prefix="/clip_annotations",
         tags=["Clip Annotations"],
+        dependencies=[Depends(auth_middleware)]
     )
     annotation_tasks_router = get_annotation_tasks_router(settings)
     main_router.include_router(
         annotation_tasks_router,
         prefix="/annotation_tasks",
         tags=["Annotation Tasks"],
+        dependencies=[Depends(auth_middleware)]
     )
     main_router.include_router(
         annotation_projects_router,
         prefix="/annotation_projects",
         tags=["Annotation Projects"],
+        dependencies=[Depends(auth_middleware)]
     )
 
     # Predictions
@@ -142,22 +148,26 @@ def get_main_router(settings: Settings):
         sound_event_predictions_router,
         prefix="/sound_event_predictions",
         tags=["Sound Event Predictions"],
+        dependencies=[Depends(auth_middleware)]
     )
     main_router.include_router(
         clip_predictions_router,
         prefix="/clip_predictions",
         tags=["Clip Predictions"],
+        dependencies=[Depends(auth_middleware)]
     )
     main_router.include_router(
         model_runs_router,
         prefix="/model_runs",
         tags=["Model Runs"],
+        dependencies=[Depends(auth_middleware)]
     )
     user_runs_router = get_user_runs_router(settings)
     main_router.include_router(
         user_runs_router,
         prefix="/user_runs",
         tags=["User Runs"],
+        dependencies=[Depends(auth_middleware)]
     )
 
     # Evaluation
@@ -165,21 +175,25 @@ def get_main_router(settings: Settings):
         sound_event_evaluations_router,
         prefix="/sound_event_evaluations",
         tags=["Sound Event Evaluations"],
+        dependencies=[Depends(auth_middleware)]
     )
     main_router.include_router(
         clip_evaluations_router,
         prefix="/clip_evaluations",
         tags=["Clip Evaluations"],
+        dependencies=[Depends(auth_middleware)]
     )
     main_router.include_router(
         evaluation_sets_router,
         prefix="/evaluation_sets",
         tags=["Evaluation Sets"],
+        dependencies=[Depends(auth_middleware)]
     )
     main_router.include_router(
         evaluations_router,
         prefix="/evaluations",
         tags=["Evaluations"],
+        dependencies=[Depends(auth_middleware)]
     )
 
     # Extensions
@@ -187,6 +201,7 @@ def get_main_router(settings: Settings):
         plugin_router,
         prefix="/plugins",
         tags=["Plugins"],
+        dependencies=[Depends(auth_middleware)]
     )
 
     return main_router

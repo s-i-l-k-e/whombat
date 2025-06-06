@@ -11,7 +11,7 @@ from whombat.api.scatterplots.sound_event_annotations import (
     get_scatterplot_data,
 )
 from whombat.filters.sound_event_annotations import SoundEventAnnotationFilter
-from whombat.routes.dependencies import Session, get_current_user_dependency
+from whombat.routes.dependencies import Session, get_current_user
 from whombat.routes.dependencies.settings import WhombatSettings
 from whombat.routes.types import Limit, Offset
 
@@ -22,8 +22,7 @@ __all__ = [
 
 def get_sound_event_annotations_router(settings: WhombatSettings) -> APIRouter:
     """Get the API router for sound_event_annotations."""
-    active_user = get_current_user_dependency(settings)
-
+    
     sound_event_annotations_router = APIRouter()
 
     @sound_event_annotations_router.post(
@@ -32,7 +31,7 @@ def get_sound_event_annotations_router(settings: WhombatSettings) -> APIRouter:
     )
     async def create_annotation(
         session: Session,
-        user: Annotated[schemas.SimpleUser, Depends(active_user)],
+        user: Annotated[schemas.SimpleUser, Depends(get_current_user)],
         clip_annotation_uuid: UUID,
         data: schemas.SoundEventAnnotationCreate,
     ):
@@ -184,7 +183,7 @@ def get_sound_event_annotations_router(settings: WhombatSettings) -> APIRouter:
         sound_event_annotation_uuid: UUID,
         key: str,
         value: str,
-        user: Annotated[schemas.SimpleUser, Depends(active_user)],
+        user: Annotated[schemas.SimpleUser, Depends(get_current_user)],
     ):
         """Add a tag to an annotation annotation."""
         sound_event_annotation = await api.sound_event_annotations.get(
@@ -233,7 +232,7 @@ def get_sound_event_annotations_router(settings: WhombatSettings) -> APIRouter:
         session: Session,
         sound_event_annotation_uuid: UUID,
         data: schemas.NoteCreate,
-        user: Annotated[schemas.SimpleUser, Depends(active_user)],
+        user: Annotated[schemas.SimpleUser, Depends(get_current_user)],
     ):
         """Create a note for an annotation annotation."""
         sound_event_annotation = await api.sound_event_annotations.get(

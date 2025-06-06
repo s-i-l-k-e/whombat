@@ -6,6 +6,7 @@ whombat.db
 front/tests-examples
 front/playwright-report
 front/test-results
+front/.env
 .backups
 build/whombat
 dist

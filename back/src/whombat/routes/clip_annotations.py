@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends
 
 from whombat import api, schemas
 from whombat.filters.clip_annotations import ClipAnnotationFilter
-from whombat.routes.dependencies import Session, get_current_user_dependency
+from whombat.routes.dependencies import Session, get_current_user
 from whombat.routes.dependencies.settings import WhombatSettings
 from whombat.routes.types import Limit, Offset
 
@@ -18,8 +18,6 @@ __all__ = [
 
 def get_clip_annotations_router(settings: WhombatSettings) -> APIRouter:
     """Get the API router for clip_annotations."""
-    active_user = get_current_user_dependency(settings)
-
     clip_annotations_router = APIRouter()
 
     @clip_annotations_router.post(
@@ -133,7 +131,7 @@ def get_clip_annotations_router(settings: WhombatSettings) -> APIRouter:
         clip_annotation_uuid: UUID,
         key: str,
         value: str,
-        user: Annotated[schemas.SimpleUser, Depends(active_user)],
+        user: Annotated[schemas.SimpleUser, Depends(get_current_user)],
     ):
         """Add a tag to an annotation annotation."""
         clip_annotation = await api.clip_annotations.get(
@@ -182,7 +180,7 @@ def get_clip_annotations_router(settings: WhombatSettings) -> APIRouter:
         session: Session,
         clip_annotation_uuid: UUID,
         data: schemas.NoteCreate,
-        user: Annotated[schemas.SimpleUser, Depends(active_user)],
+        user: Annotated[schemas.SimpleUser, Depends(get_current_user)],
     ):
         """Create a note for an annotation annotation."""
         clip_annotation = await api.clip_annotations.get(

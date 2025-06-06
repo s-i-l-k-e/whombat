@@ -9,7 +9,7 @@ from soundevent.data import AnnotationState
 from whombat import api, schemas
 from whombat.filters.annotation_tasks import AnnotationTaskFilter
 from whombat.filters.clips import UUIDFilter as ClipUUIDFilter
-from whombat.routes.dependencies import Session, get_current_user_dependency
+from whombat.routes.dependencies import Session, get_current_user
 from whombat.routes.dependencies.settings import WhombatSettings
 from whombat.routes.types import Limit, Offset
 
@@ -20,7 +20,6 @@ __all__ = [
 
 def get_annotation_tasks_router(settings: WhombatSettings) -> APIRouter:
     """Get the API router for annotation tasks."""
-    active_user = get_current_user_dependency(settings)
 
     annotation_tasks_router = APIRouter()
 
@@ -150,7 +149,7 @@ def get_annotation_tasks_router(settings: WhombatSettings) -> APIRouter:
         session: Session,
         annotation_task_uuid: UUID,
         state: AnnotationState,
-        user: Annotated[schemas.SimpleUser, Depends(active_user)],
+        user: Annotated[schemas.SimpleUser, Depends(get_current_user)],
     ):
         """Add a badge to an annotation task."""
         annotation_task = await api.annotation_tasks.get(
