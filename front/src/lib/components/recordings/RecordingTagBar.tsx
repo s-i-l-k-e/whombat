@@ -1,4 +1,4 @@
-import { type FC } from "react";
+import { type FC, useState } from "react";
 
 import { TagIcon } from "@/lib/components/icons";
 import AddTagButton from "@/lib/components/tags/AddTagButton";
@@ -28,6 +28,7 @@ const _emptyTags: Tag[] = [];
  *   onClickTag={(tag) => console.log(tag)}
  *   onDeleteTag={(tag) => console.log(tag)}
  *   disabled={false}
+ *   maxVisibleTags={3}
  * />
  * ```
  */
@@ -40,6 +41,7 @@ export default function RecordingTagBar({
   onDeleteTag,
   tagColorFn = getTagColor,
   TagSearchBar = TagSearchBarBase,
+  maxVisibleTags = 3,
   ...props
 }: {
   /** The list of tags associated with the recording. */
@@ -56,6 +58,8 @@ export default function RecordingTagBar({
   disabled?: boolean;
   /** If true, the tag can be closed. */
   canClose?: boolean;
+  /** Maximum number of tags to show when collapsed. */
+  maxVisibleTags?: number;
   /** The tag search bar component to render inside the add tag button popover.
    *
    * Can be a custom tag search bar component that accepts the same props as the
@@ -64,6 +68,12 @@ export default function RecordingTagBar({
    * */
   TagSearchBar?: FC<TagSearchBarProps>;
 } & TagSearchBarProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  const hasMoreTags = tags.length > maxVisibleTags;
+  const visibleTags = isExpanded ? tags : tags.slice(0, maxVisibleTags);
+  const hiddenCount = tags.length - maxVisibleTags;
+
   return (
     <div className="flex flex-row gap-2 items-center">
       <div className="inline-flex">
@@ -71,7 +81,7 @@ export default function RecordingTagBar({
         <span className="text-sm font-medium text-stone-500">{label}</span>
       </div>
       <div className="flex flex-row flex-wrap gap-2 items-center">
-        {tags?.map((tag: Tag) => (
+        {visibleTags?.map((tag: Tag) => (
           <TagComponent
             key={`${tag.key}-${tag.value}`}
             tag={tag}
@@ -81,6 +91,14 @@ export default function RecordingTagBar({
             canClose={canClose && !disabled}
           />
         ))}
+        {hasMoreTags && (
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="text-xs px-2 py-1 rounded text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 transition-colors"
+          >
+            {isExpanded ? "Show less" : `+${hiddenCount} more`}
+          </button>
+        )}
         {tags?.length === 0 && (
           <span className="text-sm text-stone-400 dark:text-stone-600">
             No tags
