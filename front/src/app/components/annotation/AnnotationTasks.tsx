@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import useAudioSettings from "@/app/hooks/settings/useAudioSettings";
@@ -12,10 +12,11 @@ import AnnotationTaskFilter from "@/lib/components/filters/AnnotationTaskFilter"
 import useAnnotateTasks from "@/lib/hooks/annotation/useAnnotateTasks";
 import useAnnotationTagPallete from "@/lib/hooks/annotation/useAnnotationTagPalette";
 
-import type { AnnotationProject, AnnotationTask } from "@/lib/types";
+import type { AnnotationProject, AnnotationTask, SoundEventAnnotation } from "@/lib/types";
 
 import ClipAnnotationNotes from "../clip_annotations/ClipAnnotationNotes";
 import ClipAnnotationTags from "../clip_annotations/ClipAnnotationTags";
+import SoundEventAnnotationList from "../sound_event_annotations/SoundEventAnnotationList";
 import TagSearchBar from "../tags/TagSearchBar";
 import ClipAnnotationSpectrogram from "./AnnotationClip";
 import AnnotationContext from "./AnnotationContext";
@@ -36,6 +37,8 @@ export default function AnnotateTasks({
 
   const tagPalette = useAnnotationTagPallete();
 
+  const [selectedSoundEventAnnotation, setSelectedSoundEventAnnotation] = useState<SoundEventAnnotation | null>(null);
+
   const filter = useMemo(
     () => ({ annotation_project: annotationProject }),
     [annotationProject],
@@ -45,6 +48,18 @@ export default function AnnotateTasks({
     annotationTask,
     filter,
   });
+
+  // Set the initial selected annotation based on the UUID parameter
+  useEffect(() => {
+    if (initialSoundEventAnnotationUUID && tasks.annotations.data?.sound_events) {
+      const initialAnnotation = tasks.annotations.data.sound_events.find(
+        annotation => annotation.uuid === initialSoundEventAnnotationUUID
+      );
+      if (initialAnnotation) {
+        setSelectedSoundEventAnnotation(initialAnnotation);
+      }
+    }
+  }, [initialSoundEventAnnotationUUID, tasks.annotations.data?.sound_events]);
 
   useHotkeys("n", tasks.nextTask, {
     description: "Go to next task",
@@ -116,6 +131,15 @@ export default function AnnotateTasks({
           onRemoveTag={tagPalette.removeTag}
         />
       }
+      AnnotationList={
+        tasks.annotations.data != null ? (
+          <SoundEventAnnotationList
+            clipAnnotation={tasks.annotations.data}
+            selectedAnnotation={selectedSoundEventAnnotation}
+            onSelectAnnotation={setSelectedSoundEventAnnotation}
+          />
+        ) : undefined
+      }
       ClipTags={
         tasks.annotations.data != null ? (
           <ClipAnnotationTags clipAnnotation={tasks.annotations.data} />
@@ -134,6 +158,8 @@ export default function AnnotateTasks({
             spectrogramSettings={spectrogramSettings}
             tagPalette={tagPalette}
             initialSoundEventAnnotationUUID={initialSoundEventAnnotationUUID}
+            selectedSoundEventAnnotation={selectedSoundEventAnnotation}
+            onSelectedSoundEventAnnotationChange={setSelectedSoundEventAnnotation}
           />
         ) : undefined
       }

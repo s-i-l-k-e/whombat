@@ -10,6 +10,7 @@ export default function AnnotationTask(props: {
   isLoading?: boolean;
   Progress?: JSX.Element;
   TagPalette?: JSX.Element;
+  AnnotationList?: JSX.Element;
   TaskStatus?: JSX.Element;
   Context?: JSX.Element;
   Spectrogram?: JSX.Element;
@@ -23,6 +24,7 @@ export default function AnnotationTask(props: {
       SideBar={
         <div className="flex flex-col gap-2 w-full">
           {props.TagPalette}
+          {props.AnnotationList}
           {props.ClipTags}
           {props.ClipNotes}
         </div>

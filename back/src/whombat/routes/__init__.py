@@ -9,6 +9,7 @@ from whombat.routes.annotation_tasks import get_annotation_tasks_router
 from whombat.routes.audio import audio_router
 from whombat.routes.auth import get_auth_router
 from whombat.routes.clip_annotations import get_clip_annotations_router
+from whombat.routes.config import config_router
 from whombat.routes.clip_evaluations import clip_evaluations_router
 from whombat.routes.clip_predictions import clip_predictions_router
 from whombat.routes.clips import clips_router
@@ -202,6 +203,13 @@ def get_main_router(settings: Settings):
         prefix="/plugins",
         tags=["Plugins"],
         dependencies=[Depends(auth_middleware)]
+    )
+
+    # Config
+    main_router.include_router(
+        config_router,
+        prefix="/config",
+        tags=["Config"],
     )
 
     return main_router

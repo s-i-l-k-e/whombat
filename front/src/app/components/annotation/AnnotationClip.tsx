@@ -24,7 +24,7 @@ import useClipViewport from "@/lib/hooks/window/useClipViewport";
 
 import { getGeometryViewingWindow } from "@/lib/utils/windows";
 
-import type { ClipAnnotation } from "@/lib/types";
+import type { ClipAnnotation, SoundEventAnnotation } from "@/lib/types";
 
 export default function ClipAnnotationSpectrogram({
   clipAnnotation,
@@ -33,6 +33,8 @@ export default function ClipAnnotationSpectrogram({
   tagPalette,
   height,
   initialSoundEventAnnotationUUID,
+  selectedSoundEventAnnotation,
+  onSelectedSoundEventAnnotationChange,
 }: {
   clipAnnotation: ClipAnnotation;
   spectrogramSettings: ReturnType<typeof useSpectrogramSettings>;
@@ -40,6 +42,8 @@ export default function ClipAnnotationSpectrogram({
   tagPalette: ReturnType<typeof useAnnotationTagPallete>;
   height?: number;
   initialSoundEventAnnotationUUID?: string | null;
+  selectedSoundEventAnnotation?: SoundEventAnnotation | null;
+  onSelectedSoundEventAnnotationChange?: (annotation: SoundEventAnnotation | null) => void;
 }) {
   const { data = clipAnnotation } = useClipAnnotation({
     uuid: clipAnnotation.uuid,
@@ -50,6 +54,8 @@ export default function ClipAnnotationSpectrogram({
 
   const annotationState = useAnnotationState({ 
     spectrogramState,
+    soundEventAnnotation: selectedSoundEventAnnotation,
+    onSelectAnnotation: onSelectedSoundEventAnnotationChange,
   });
 
   const viewport = useClipViewport({
@@ -110,14 +116,6 @@ export default function ClipAnnotationSpectrogram({
 
   // Handle initial sound event annotation selection from URL (only once)
   useEffect(() => {
-    console.log('🔍 Initial UUID effect triggered:', {
-      initialSoundEventAnnotationUUID,
-      hasData: !!data,
-      hasSoundEvents: !!data.sound_events,
-      soundEventsCount: data.sound_events?.length,
-      hasRecording: !!data.clip?.recording,
-      processedInitialUUID: processedInitialUUID.current,
-    });
 
     if (
       initialSoundEventAnnotationUUID && 
@@ -125,16 +123,13 @@ export default function ClipAnnotationSpectrogram({
       data.clip?.recording &&
       processedInitialUUID.current !== initialSoundEventAnnotationUUID
     ) {
-      console.log('🎯 Processing initial UUID selection...');
       
       const targetAnnotation = data.sound_events.find(
         (annotation) => annotation.uuid === initialSoundEventAnnotationUUID
       );
       
-      console.log('🔎 Target annotation found:', !!targetAnnotation, targetAnnotation?.uuid);
       
       if (targetAnnotation) {
-        console.log('✅ Setting selected annotation and panning viewport');
         annotationState.setSelectedAnnotation(targetAnnotation);
         
         // Move viewport to show the selected annotation
@@ -145,27 +140,22 @@ export default function ClipAnnotationSpectrogram({
           freqBuffer: null, // Use full frequency range (zoom all the way out)
         });
         
-        console.log('🌍 Computed geometry window:', geometryWindow);
-        console.log('🔧 Current viewport before setting:', viewport.viewport);
         
         viewport.set(geometryWindow);
         
         // Check if viewport actually changed
         setTimeout(() => {
-          console.log('⏰ Viewport after immediate setting:', viewport.viewport);
           
           // Try setting again with a delay
           viewport.set(geometryWindow);
           
           setTimeout(() => {
-            console.log('🔧 Viewport after second setting:', viewport.viewport);
           }, 50);
         }, 10);
         
         // Mark this UUID as processed
         processedInitialUUID.current = initialSoundEventAnnotationUUID;
       } else {
-        console.log('❌ Target annotation not found in sound events');
       }
     }
   }, [
@@ -174,10 +164,6 @@ export default function ClipAnnotationSpectrogram({
     data.clip?.recording,
   ]);
 
-  // Debug viewport changes
-  useEffect(() => {
-    console.log('📊 Viewport changed:', viewport.viewport);
-  }, [viewport.viewport]);
 
   // Disable bounding box mode when no annotation is selected
   useEffect(() => {
