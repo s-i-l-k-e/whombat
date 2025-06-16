@@ -1,32 +1,32 @@
 services:
-reverse-proxy:
-  image: traefik:v3.1
-  container_name: whombat-traefik
-  command:
-    - "sh"
-    - "-c"
-    - |
-      chmod 600 /acme.json && exec traefik \
-        --api.insecure=true \
-        --providers.docker \
-        --providers.docker.exposedbydefault=false \
-        --entrypoints.web.address=:80 \
-        --entrypoints.websecure.address=:443 \
-        --certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL} \
-        --certificatesresolvers.letsencrypt.acme.storage=/acme.json \
-        --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web \
-        --log.level=DEBUG \
-        --accesslog=true \
-        --accesslog.fields.headers.defaultmode=keep
-  ports:
-    - "80:80"
-    - "443:443"
-    - "8080:8080"
-  volumes:
-    - /var/run/docker.sock:/var/run/docker.sock
-    - traefik-acme:/acme.json
-  networks:
-    - public
+  reverse-proxy:
+    image: traefik:v3.1
+    container_name: whombat-traefik
+    command:
+      - "sh"
+      - "-c"
+      - |
+        chmod 600 /acme.json && exec traefik \
+          --api.insecure=true \
+          --providers.docker \
+          --providers.docker.exposedbydefault=false \
+          --entrypoints.web.address=:80 \
+          --entrypoints.websecure.address=:443 \
+          --certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL} \
+          --certificatesresolvers.letsencrypt.acme.storage=/acme.json \
+          --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web \
+          --log.level=DEBUG \
+          --accesslog=true \
+          --accesslog.fields.headers.defaultmode=keep
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - traefik-acme:/acme.json
+    networks:
+      - public
 
   backend:
     build:
@@ -57,7 +57,6 @@ reverse-proxy:
       - "traefik.http.routers.backend-redirect.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`) && !PathPrefix(`/api/auth`)"
       - "traefik.http.routers.backend-redirect.entrypoints=web"
       - "traefik.http.routers.backend-redirect.middlewares=${TRAEFIK_REDIRECT_MIDDLEWARE}"
-      - "traefik.http.routers.backend.middlewares=auth-headers"
     volumes:
       - type: volume
         source: db-data
