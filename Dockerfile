@@ -1,48 +1,26 @@
-# === STEP 1 === Build User Guide
+# === Build whombat backend only ===
 
-FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS guide_builder
-
-RUN mkdir /guide
-
-WORKDIR /guide
-
-RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=back/uv.lock,target=uv.lock \
-    --mount=type=bind,source=back/pyproject.toml,target=pyproject.toml \
-    uv sync --frozen --no-install-project --dev --all-extras
-
-COPY back/docs /guide/docs
-COPY back/mkdocs-guide.yml /guide/mkdocs-guide.yml
-
-RUN uv run mkdocs build -f mkdocs-guide.yml -d /guide/out/
-
-# === STEP 2 === Build Front End
-
-FROM node:latest AS frontend_builder
-
-RUN mkdir /statics
-
-WORKDIR /front
-
-COPY front/ /front
-
-RUN npm install
-
-RUN npm run build
-
-# === STEP 3 === Build whombat
-
-# Run the web server
-# Use a Python image with uv pre-installed
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS builder
 
-# Install the project into `/app`
 WORKDIR /app
 
-# Enable bytecode compilation
-ENV UV_COMPILE_BYTECODE=1
+# Install GDAL and other system dependencies for building
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgdal-dev \
+    gdal-bin \
+    libgdal32 \
+    build-essential \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy from the cache instead of linking since it's a mounted volume
+# Set GDAL environment variables for building
+ENV GDAL_CONFIG=/usr/bin/gdal-config
+ENV GDAL_VERSION=3.6.2
+
+# Verify gdal-config exists
+RUN which gdal-config && gdal-config --version
+
+ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 
 # Install the project's dependencies using the lockfile and settings
@@ -51,32 +29,31 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=back/pyproject.toml,target=pyproject.toml \
     uv sync --frozen --no-install-project --no-dev --all-extras
 
-# Then, add the rest of the project source code and install it
-# Installing separately from its dependencies allows optimal layer caching
+# Add the rest of the project source code and install it
 ADD back /app
-
-# Copy the guide
-COPY --from=guide_builder /guide/out/ /app/src/whombat/user_guide/
-
-# Copy the statics
-COPY --from=frontend_builder /front/out/ /app/src/whombat/statics/
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --all-extras
 
-# === STEP 4 === Final Image
+# === Final Image ===
 
-# Then, use a final image without uv
 FROM python:3.12-slim-bookworm
 
-# Install system dependencies, including libexpat1 and clean up the cache
+# Install system dependencies, including runtime GDAL libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libexpat1 \
     libsndfile1 \
+    libgdal32 \
+    libgdal-dev \
+    gdal-bin \
     && rm -rf /var/lib/apt/lists/*
 
+# Set GDAL environment variables
+ENV GDAL_DATA=/usr/share/gdal
+ENV PROJ_LIB=/usr/share/proj
+
 # Copy the application from the builder
-COPY --from=builder --chown=app:app /app /app
+COPY --from=builder /app /app
 
 # Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH"

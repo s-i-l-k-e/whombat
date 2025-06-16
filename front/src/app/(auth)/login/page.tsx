@@ -17,7 +17,7 @@ export default function LoginForm() {
       <div className="mb-4 flex flex-col items-center gap-4 text-center text-7xl">
         <WhombatIcon width={128} height={128} />
         <span className="font-sans font-bold text-emerald-500 underline decoration-8">
-          Whombat
+          WhoFrog
         </span>
       </div>
       <p className="max-w-prose text-stone-500">

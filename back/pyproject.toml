@@ -20,6 +20,9 @@ dependencies = [
   "setuptools>=75.1.0",
   "httptools>=0.6.4",
   "python-jose[cryptography]",
+  "requests",
+  "jose",
+  "starlette",
 ]
 requires-python = ">=3.11"
 readme = "README.md"
