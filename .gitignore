@@ -10,3 +10,4 @@ front/.env
 .backups
 build/whombat
 dist
+.env

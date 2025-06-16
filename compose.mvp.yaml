@@ -1,0 +1,116 @@
+services:
+  reverse-proxy:
+    image: traefik:v3.1
+    container_name: whombat-traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - traefik-acme:/acme.json
+    networks:
+      - public
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: whombat-backend
+    command: ["whombat"]
+    environment:
+      - WHOMBAT_DATA_DIR=/data/
+      - WHOMBAT_DB_URL=${DB_URL}
+      - WHOMBAT_DOMAIN=${DOMAIN}
+      - WHOMBAT_AZURE_TENANT_ID=${AZURE_AD_TENANT_ID}
+      - WHOMBAT_AZURE_CLIENT_ID=${AZURE_AD_BACKEND_CLIENT_ID}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=${TRAEFIK_ENTRYPOINT}"
+      - "traefik.http.routers.backend.tls=${TRAEFIK_TLS}"
+      - "traefik.http.routers.backend.tls.certresolver=${TRAEFIK_CERTRESOLVER}"
+      - "traefik.http.routers.backend.middlewares=api-stripprefix"
+      - "traefik.http.middlewares.api-stripprefix.stripprefix.prefixes=/api"
+      - "traefik.http.services.backend.loadbalancer.server.port=5000"
+      - "traefik.http.routers.backend.priority=2"
+      # HTTP to HTTPS redirect (only active when HTTPS=true)
+      - "traefik.http.routers.backend-redirect.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend-redirect.entrypoints=web"
+      - "traefik.http.routers.backend-redirect.middlewares=${TRAEFIK_REDIRECT_MIDDLEWARE}"
+    volumes:
+      - type: volume
+        source: db-data
+        target: /data
+      - type: bind
+        source: ${AUDIO_DIR}
+        target: /audio
+    networks:
+      - public
+
+  frontend:
+    build:
+      context: front
+      args:
+        - NODE_ENV=production
+        - NEXT_PUBLIC_BACKEND_HOST=${NEXT_PUBLIC_BACKEND_HOST}
+        - NEXTAUTH_URL=${NEXTAUTH_URL}
+        - AZURE_AD_CLIENT_ID=${AZURE_AD_FRONTEND_CLIENT_ID}
+        - AZURE_AD_CLIENT_SECRET=${AZURE_AD_CLIENT_SECRET}
+        - AZURE_AD_TENANT_ID=${AZURE_AD_TENANT_ID}
+        - AZURE_AD_API_SCOPE=${AZURE_AD_API_SCOPE}
+        - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+    container_name: whombat-frontend
+    command: ["npx", "pnpm", "start"]
+    environment:
+      - NEXT_PUBLIC_BACKEND_HOST=${NEXT_PUBLIC_BACKEND_HOST}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - NODE_ENV=production
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.frontend.entrypoints=${TRAEFIK_ENTRYPOINT}"
+      - "traefik.http.routers.frontend.tls=${TRAEFIK_TLS}"
+      - "traefik.http.routers.frontend.tls.certresolver=${TRAEFIK_CERTRESOLVER}"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+      # HTTP to HTTPS redirect (only active when HTTPS=true)
+      - "traefik.http.routers.frontend-redirect.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.frontend-redirect.entrypoints=web"
+      - "traefik.http.routers.frontend-redirect.middlewares=${TRAEFIK_REDIRECT_MIDDLEWARE}"
+      # HTTPS redirect middleware
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
+    depends_on:
+      - backend
+    networks:
+      - public
+
+  # Optional: PostgreSQL database (uncomment and configure if needed)
+  # database:
+  #   image: postgres:15
+  #   container_name: whombat-postgres
+  #   environment:
+  #     - POSTGRES_DB=${POSTGRES_DB}
+  #     - POSTGRES_USER=${POSTGRES_USER}
+  #     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   networks:
+  #     - public
+
+networks:
+  public:
+  
+volumes:
+  db-data:
+  traefik-acme:
+  # postgres-data:  # Uncomment if using PostgreSQL
