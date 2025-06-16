@@ -93,7 +93,6 @@ services:
     image: postgres
     container_name: whombat-db
     restart: always
-    user: postgres
     volumes:
       - db-data:/var/lib/postgresql/data
     environment:
