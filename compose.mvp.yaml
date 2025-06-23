@@ -6,25 +6,19 @@ services:
       - "sh"
       - "-c"
       - |
-        chmod 600 /acme.json && exec traefik \
+        exec traefik \
           --api.insecure=true \
           --providers.docker \
           --providers.docker.exposedbydefault=false \
           --entrypoints.web.address=:80 \
-          --entrypoints.websecure.address=:443 \
-          --certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL} \
-          --certificatesresolvers.letsencrypt.acme.storage=/acme.json \
-          --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web \
           --log.level=DEBUG \
           --accesslog=true \
           --accesslog.fields.headers.defaultmode=keep
     ports:
       - "80:80"
-      - "443:443"
       - "8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - /home/ec2-user/acme.json:/acme.json
     networks:
       - public
 
@@ -49,14 +43,9 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`) && !PathPrefix(`/api/auth`)"
-      - "traefik.http.routers.backend.entrypoints=${TRAEFIK_ENTRYPOINT}"
-      - "traefik.http.routers.backend.tls=${TRAEFIK_TLS}"
-      - "traefik.http.routers.backend.tls.certresolver=${TRAEFIK_CERTRESOLVER}"
+      - "traefik.http.routers.backend.entrypoints=web"
       - "traefik.http.services.backend.loadbalancer.server.port=5000"
       - "traefik.http.routers.backend.priority=2"
-      - "traefik.http.routers.backend-redirect.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`) && !PathPrefix(`/api/auth`)"
-      - "traefik.http.routers.backend-redirect.entrypoints=web"
-      - "traefik.http.routers.backend-redirect.middlewares=${TRAEFIK_REDIRECT_MIDDLEWARE}"
     volumes:
       - type: volume
         source: db-data
@@ -131,16 +120,9 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.frontend.entrypoints=${TRAEFIK_ENTRYPOINT}"
-      - "traefik.http.routers.frontend.tls=${TRAEFIK_TLS}"
-      - "traefik.http.routers.frontend.tls.certresolver=${TRAEFIK_CERTRESOLVER}"
+      - "traefik.http.routers.frontend.entrypoints=web"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
       - "traefik.http.routers.frontend.priority=1"
-      - "traefik.http.routers.frontend-redirect.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.frontend-redirect.entrypoints=web"
-      - "traefik.http.routers.frontend-redirect.middlewares=${TRAEFIK_REDIRECT_MIDDLEWARE}"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
     depends_on:
       - backend
     networks:
@@ -152,4 +134,3 @@ networks:
   
 volumes:
   db-data:
-  traefik-acme:

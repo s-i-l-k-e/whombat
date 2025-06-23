@@ -14,7 +14,7 @@ function Brand() {
   return (
     <a href="/" className="flex items-center">
       <span className="self-center text-2xl font-bold text-emerald-500  whitespace-nowrap decoration-4">
-        WhoFrog
+        AudioBox FrogID
       </span>
     </a>
   );
