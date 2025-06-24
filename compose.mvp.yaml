@@ -2,6 +2,7 @@ services:
   reverse-proxy:
     image: traefik:v3.1
     container_name: whombat-traefik
+    restart: unless-stopped
     command:
       - "sh"
       - "-c"
@@ -27,6 +28,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: whombat-backend
+    restart: unless-stopped
     command: ["whombat"]
     environment:
       - WHOMBAT_DATA_DIR=/data/
@@ -67,6 +69,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: whombat-prestart
+    restart: unless-stopped
     command: alembic upgrade head
     environment:
       - WHOMBAT_DB_DIALECT=postgresql
@@ -84,7 +87,7 @@ services:
   db:
     image: postgres
     container_name: whombat-db
-    restart: always
+    restart: unless-stopped
     volumes:
       - db-data:/var/lib/postgresql/data
     environment:
@@ -113,6 +116,7 @@ services:
         - AZURE_AD_API_SCOPE=${AZURE_AD_API_SCOPE}
         - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
     container_name: whombat-frontend
+    restart: unless-stopped
     command: ["npx", "pnpm", "dev"]
     environment:
       - NEXT_PUBLIC_BACKEND_HOST=${NEXT_PUBLIC_BACKEND_HOST}
