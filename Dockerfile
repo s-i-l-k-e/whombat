@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     pkg-config \
     curl \
-    netstat \
+    net-tools \
     && rm -rf /var/lib/apt/lists/*
 
 # Set GDAL environment variables for building
