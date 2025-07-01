@@ -69,7 +69,6 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: whombat-prestart
-    restart: unless-stopped
     command: alembic upgrade head
     environment:
       - WHOMBAT_DB_DIALECT=postgresql
