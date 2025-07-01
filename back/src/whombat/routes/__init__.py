@@ -42,11 +42,9 @@ __all__ = [
 
 
 def get_main_router(settings: Settings):
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.info("Creating main router - initializing Azure AD auth middleware")
+    print("ROUTER: Creating main router - initializing Azure AD auth middleware")
     auth_middleware = AzureADAuth(settings)
-    logger.info("Azure AD auth middleware created successfully")
+    print("ROUTER: Azure AD auth middleware created successfully")
     main_router = APIRouter(prefix="/api/v1")
 
     # Admin

@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 class AzureADAuth(HTTPBearer):
     def __init__(self, settings: Settings, auto_error: bool = True):
-        logger.info("Initializing Azure AD authentication middleware")
+        print("AZURE AUTH: Initializing Azure AD authentication middleware")
         super().__init__(auto_error=auto_error)
         self.settings = settings
         self.tenant_id = settings.azure_tenant_id
@@ -26,10 +26,10 @@ class AzureADAuth(HTTPBearer):
         self.jwks_uri = f"https://login.microsoftonline.com/{self.tenant_id}/discovery/v2.0/keys"
         self._jwks = None
         
-        logger.info(f"Azure AD Config - Tenant ID: {self.tenant_id}")
-        logger.info(f"Azure AD Config - Client ID: {self.client_id}")
-        logger.info(f"Azure AD Config - Issuer: {self.issuer}")
-        logger.info(f"Azure AD Config - JWKS URI: {self.jwks_uri}")
+        print(f"AZURE AUTH: Tenant ID: {self.tenant_id}")
+        print(f"AZURE AUTH: Client ID: {self.client_id}")
+        print(f"AZURE AUTH: Issuer: {self.issuer}")
+        print(f"AZURE AUTH: JWKS URI: {self.jwks_uri}")
 
     async def __call__(
             self,
