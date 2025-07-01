@@ -2,6 +2,12 @@ import axios from "axios";
 import NextAuth from "next-auth"
 import AzureADProvider from "next-auth/providers/azure-ad";
 
+console.log('Azure AD Config Check:', {
+  clientId: process.env.AZURE_AD_CLIENT_ID,
+  tenantId: process.env.AZURE_AD_TENANT_ID,
+  hasSecret: !!process.env.AZURE_AD_CLIENT_SECRET
+});
+
 const handler = NextAuth({
     providers: [
         AzureADProvider({
