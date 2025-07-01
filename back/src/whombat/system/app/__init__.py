@@ -12,8 +12,17 @@ __all__ = ["create_app", "ROOT_DIR"]
 
 
 def create_app(settings: Settings) -> FastAPI:
+    print("=== WHOMBAT STARTUP ===")
+    print(f"STARTUP: Azure Tenant ID: {settings.azure_tenant_id}")
+    print(f"STARTUP: Azure Client ID: {settings.azure_client_id}")
+    print(f"STARTUP: Log Level: {settings.log_level}")
+    print(f"STARTUP: Domain: {settings.domain}")
+    print("=== CREATING APP ===")
+    
     app = FastAPI(lifespan=functools.partial(lifespan, settings))
     add_middlewares(app, settings)
     add_routes(app, settings)
     add_error_handlers(app)
+    
+    print("=== APP CREATED ===")
     return app

@@ -34,68 +34,69 @@ class AzureADAuth(HTTPBearer):
     async def __call__(
             self,
             request: Request) -> Any:
-        logger.info(f"Azure AD Auth: Processing request to {request.url.path}")
-        logger.debug(f"Azure AD Auth: Request method: {request.method}")
-        logger.debug(f"Azure AD Auth: Request headers: {dict(request.headers)}")
+        print(f"AZURE AUTH: Processing request to {request.url.path}")
+        print(f"AZURE AUTH: Request method: {request.method}")
+        print(f"AZURE AUTH: Request headers: {dict(request.headers)}")
         
         credentials: HTTPAuthorizationCredentials = await super().__call__(request)
 
         if not credentials:
-            logger.warning("Azure AD Auth: No credentials provided in Authorization header")
+            print("AZURE AUTH: No credentials provided in Authorization header")
             if self.auto_error:
                 raise HTTPException(status_code=401, detail="Invalid authorization credentials")
             return None
 
         try:
             token = credentials.credentials
-            logger.info(f"Azure AD Auth: Received bearer token (length: {len(token)})")
-            logger.debug(f"Azure AD Auth: Token preview: {token[:50]}...")
+            print(f"AZURE AUTH: Received bearer token (length: {len(token)})")
+            print(f"AZURE AUTH: Token preview: {token[:50]}...")
             
-            logger.info("Azure AD Auth: Starting token validation")
-            logger.info(f"Azure AD Auth: Validating against Tenant ID: {self.tenant_id}")
-            logger.info(f"Azure AD Auth: Validating against Client ID: {self.client_id}")
+            print("AZURE AUTH: Starting token validation")
+            print(f"AZURE AUTH: Validating against Tenant ID: {self.tenant_id}")
+            print(f"AZURE AUTH: Validating against Client ID: {self.client_id}")
             claims = self.validate_token(token)
-            logger.info(f"Azure AD Auth: Token validation successful. Claims: {claims}")
+            print(f"AZURE AUTH: Token validation successful. Claims: {claims}")
             
-            logger.info("Azure AD Auth: Getting database connection")
+            print("AZURE AUTH: Getting database connection")
             url = get_database_url(self.settings)
             engine = create_async_db_engine(url)
             
             async with get_async_session(engine) as session:
-                logger.info("Azure AD Auth: Database session established")
+                print("AZURE AUTH: Database session established")
                 user = await self.get_or_create_user(session, claims)
-                logger.info(f"Azure AD Auth: User resolved: {user.username} (ID: {user.id})")
+                print(f"AZURE AUTH: User resolved: {user.username} (ID: {user.id})")
                 request.state.user = user
-                logger.info("Azure AD Auth: User attached to request state")
+                print("AZURE AUTH: User attached to request state")
             
             return user
         except Exception as e:
-            logger.error(f"Azure AD Auth: Authentication failed with error: {str(e)}")
-            logger.exception("Azure AD Auth: Full exception details:")
+            print(f"AZURE AUTH ERROR: Authentication failed with error: {str(e)}")
+            import traceback
+            print(f"AZURE AUTH ERROR TRACEBACK: {traceback.format_exc()}")
             raise HTTPException(status_code=401, detail=str(e))
 
 
     def validate_token(self, token: str) -> dict:
-        logger.info("Azure AD Auth: Starting JWT token validation")
+        print("AZURE AUTH: Starting JWT token validation")
         
         if not self._jwks:
-            logger.info(f"Azure AD Auth: Fetching JWKS from {self.jwks_uri}")
+            print(f"AZURE AUTH: Fetching JWKS from {self.jwks_uri}")
             response = requests.get(self.jwks_uri)
-            logger.info(f"Azure AD Auth: JWKS response status: {response.status_code}")
+            print(f"AZURE AUTH: JWKS response status: {response.status_code}")
             
             if response.status_code != 200:
-                logger.error(f"Azure AD Auth: Failed to fetch JWKS. Status: {response.status_code}, Body: {response.text}")
+                print(f"AZURE AUTH ERROR: Failed to fetch JWKS. Status: {response.status_code}, Body: {response.text}")
                 raise Exception(f"Failed to fetch JWKS from Azure AD: {response.status_code}")
             
             self._jwks = response.json()
-            logger.info(f"Azure AD Auth: JWKS fetched successfully. Keys count: {len(self._jwks.get('keys', []))}")
-            logger.debug(f"Azure AD Auth: JWKS content: {self._jwks}")
+            print(f"AZURE AUTH: JWKS fetched successfully. Keys count: {len(self._jwks.get('keys', []))}")
+            print(f"AZURE AUTH: JWKS content: {self._jwks}")
 
-        logger.info("Azure AD Auth: Decoding JWT token")
-        logger.info(f"Azure AD Auth: Using Tenant ID: {self.tenant_id}")
-        logger.info(f"Azure AD Auth: Using Client ID: {self.client_id}")
-        logger.debug(f"Azure AD Auth: Expected audience: {self.client_id}")
-        logger.debug(f"Azure AD Auth: Expected issuer: {self.issuer}")
+        print("AZURE AUTH: Decoding JWT token")
+        print(f"AZURE AUTH: Using Tenant ID: {self.tenant_id}")
+        print(f"AZURE AUTH: Using Client ID: {self.client_id}")
+        print(f"AZURE AUTH: Expected audience: {self.client_id}")
+        print(f"AZURE AUTH: Expected issuer: {self.issuer}")
         
         try:
             claims = jwt.decode(
@@ -105,12 +106,13 @@ class AzureADAuth(HTTPBearer):
                 audience=self.client_id,
                 issuer=self.issuer
             )
-            logger.info("Azure AD Auth: JWT token decoded successfully")
-            logger.debug(f"Azure AD Auth: Decoded claims: {claims}")
+            print("AZURE AUTH: JWT token decoded successfully")
+            print(f"AZURE AUTH: Decoded claims: {claims}")
             return claims
         except Exception as e:
-            logger.error(f"Azure AD Auth: JWT decode failed: {str(e)}")
-            logger.exception("Azure AD Auth: JWT decode exception details:")
+            print(f"AZURE AUTH ERROR: JWT decode failed: {str(e)}")
+            import traceback
+            print(f"AZURE AUTH ERROR TRACEBACK: {traceback.format_exc()}")
             raise
 
     async def get_or_create_user(
