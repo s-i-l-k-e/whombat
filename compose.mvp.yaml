@@ -42,6 +42,7 @@ services:
       - WHOMBAT_AZURE_TENANT_ID=${AZURE_AD_TENANT_ID}
       - WHOMBAT_AZURE_CLIENT_ID=${AZURE_AD_BACKEND_CLIENT_ID}
       - WHOMBAT_AUDIO_DIR=/audio
+      - WHOMBAT_LOG_LEVEL=debug
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`) && !PathPrefix(`/api/auth`)"
@@ -119,6 +120,7 @@ services:
     command: ["npx", "pnpm", "dev"]
     environment:
       - NEXT_PUBLIC_BACKEND_HOST=${NEXT_PUBLIC_BACKEND_HOST}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - NEXTAUTH_URL=${NEXTAUTH_URL}
       - AZURE_AD_CLIENT_ID=${AZURE_AD_FRONTEND_CLIENT_ID}
       - AZURE_AD_CLIENT_SECRET=${AZURE_AD_CLIENT_SECRET}
