@@ -12,6 +12,7 @@ services:
           --providers.docker \
           --providers.docker.exposedbydefault=false \
           --entrypoints.web.address=:80 \
+          --providers.docker.network=whombat_public
           --log.level=DEBUG \
           --accesslog=true \
           --accesslog.fields.headers.defaultmode=keep
@@ -35,7 +36,7 @@ services:
       - WHOMBAT_DB_DIALECT=postgresql
       - WHOMBAT_DB_USERNAME=${POSTGRES_USER?Variable not set}
       - WHOMBAT_DB_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
-      - WHOMBAT_DB_NAME=${POSTGRES_DB?Variable q2not set}
+      - WHOMBAT_DB_NAME=${POSTGRES_DB?Variable not set}
       - WHOMBAT_DB_HOST=db
       - WHOMBAT_DB_PORT=5432
       - WHOMBAT_DOMAIN=https://${DOMAIN}
