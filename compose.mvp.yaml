@@ -35,7 +35,7 @@ services:
       - WHOMBAT_DB_DIALECT=postgresql
       - WHOMBAT_DB_USERNAME=${POSTGRES_USER?Variable not set}
       - WHOMBAT_DB_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
-      - WHOMBAT_DB_NAME=${POSTGRES_DB?Variable not set}
+      - WHOMBAT_DB_NAME=${POSTGRES_DB?Variable q2not set}
       - WHOMBAT_DB_HOST=db
       - WHOMBAT_DB_PORT=5432
       - WHOMBAT_DOMAIN=https://${DOMAIN}
@@ -133,7 +133,7 @@ services:
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
       - "traefik.http.routers.frontend.priority=1"
       # Health check route for ELB - only matches exact root path
-      - "traefik.http.routers.health.rule=Host(`${DOMAIN}`) && Path(`/`)"
+      - "traefik.http.routers.health.rule=Path(`/`)"
       - "traefik.http.routers.health.priority=0"
       - "traefik.http.routers.health.service=frontend"
       - "traefik.http.routers.health.entrypoints=web"
