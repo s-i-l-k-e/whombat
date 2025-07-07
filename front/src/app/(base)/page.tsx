@@ -20,7 +20,7 @@ export default function Page() {
             className="m-2 inline"
           />
           <span className="font-sans font-bold decoration-8">
-            WhoFrog
+            SoundBox - FrogId
           </span>
         </h1>
     
