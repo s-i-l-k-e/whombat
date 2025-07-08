@@ -24,8 +24,4 @@ def get_frontend_config(
     settings: Settings = Depends(get_settings),
 ) -> FrontendConfig:
     """Get frontend configuration."""
-    protocol = "https" if settings.frontend_port == 443 else "http"
-    port_suffix = "" if settings.frontend_port in (80, 443) else f":{settings.frontend_port}"
-    frontend_url = f"{protocol}://{settings.domain}{port_suffix}"
-    
-    return FrontendConfig(frontend_url=frontend_url)
+    return FrontendConfig(frontend_url=settings.domain)
